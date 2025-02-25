@@ -41,7 +41,7 @@ The project's logic is based on two main arrays:
 ### `situation`
 - Checks for students **failed due to absences**.
 - If the number of absences is **greater than 15**, the status is set to `"Failed due to Absences"`.
-- Caso contrário, a situação recebe `null`.
+- Otherwise, the status is set to `null`.
 
 ### `generalAverages`
 - Calculates the average for **all students** (including those already failed due to absences) to ensure data consistency.
