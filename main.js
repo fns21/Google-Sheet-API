@@ -1,16 +1,6 @@
-// Helper Apis imports
+// Apis imports
 const { google } = require('googleapis');
 const fs = require('fs');
-
-// Set up sheet limits
-const initialRow = 4;
-const finalRow = 27;
-
-// Student situation
-let situation = [];
-
-// All students averages
-let generalAverages = [];
 
 // Load credentials
 const credentials = require('./credentials/credentials.json');
@@ -26,6 +16,18 @@ const sheets = google.sheets({ version: 'v4', auth });
 
 // Sheet ID to link in methods
 const spreadsheetId = '11vwb5RKHRECeAva5Egn8hkMHhLYxl1cOoJdTHhxLVns';
+
+
+
+// Set up sheet limits
+const initialRow = 4;
+const finalRow = 27;
+
+// Student situation
+let situation = [];
+
+// All students averages
+let generalAverages = [];
 
 async function GET(range) {
     try {

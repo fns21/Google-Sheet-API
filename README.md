@@ -1,65 +1,63 @@
-# Considerações Técnicas
+# Technical Considerations
 
-O código foi desenvolvido em **Node.js**.
+The code was developed in **Node.js**. It uses my credentials to simplify authentication logic, although, as we know, makes the code insecure and vulnerable.
 
-## Como Executar
+## How to Run
 
-Para rodar o projeto, siga os passos abaixo:
+To run the project, follow the steps below:
 
-### Instale as dependências:
+### Install dependencies:
 
 ```bash
 npm install
 ```
 
-### Execute o projeto:
+### Run the project:
 
 ```bash
 npm start
 ```
 
-Os dados passam por padronização de tipo(valor => [valor](lista de listas unitárias)) antes de serem escritos nas células.
+The data undergoes type standardization (value => [value] (list of unitary lists)) before being written to the cells.
 
+# Functionality
 
-# Funcionamento
+The project uses the Google Sheets API to manipulate the spreadsheet and authenticates using service account credentials.
 
-O projeto utiliza a **Google Sheets API** para manipular a planilha e faz a autenticação através de credenciais de conta de serviço.
-
-- **Leituras:** Ocorrem através do método `GET`.
-- **Escritas:** Ocorrem através do método `PUT`.
-
-Ambos os métodos necessitam de parâmetros pré-definidos pelas funções que os chamam.
+- **Read operations:** Performed using the `GET` method.
+- **Write operations:** Performed using the `PUT` method.
+Both methods require pre-defined parameters set by the functions that call them.
 
 ---
 
-## Lógica Principal
+## Main Logic
 
-A lógica do projeto é baseada em dois vetores principais:
+The project's logic is based on two main arrays:
 
 ### `situation`
-- Verifica os alunos **reprovados por falta**.
-- Se o número de faltas for **maior que 15**, a situação é definida como `"Reprovado por Falta"`.
+- Checks for students **failed due to absences**.
+- If the number of absences is **greater than 15**, the status is set to `"Failed due to Absences"`.
 - Caso contrário, a situação recebe `null`.
 
 ### `generalAverages`
-- Calcula a média de **todos os alunos** (incluindo os já reprovados por falta) para garantir consistência dos dados.
-- Após o cálculo das médias, a situação de cada aluno é definida com base nas seguintes premissas:
+- Calculates the average for **all students** (including those already failed due to absences) to ensure data consistency.
+- After calculating the averages, each student's status is determined based on the following criteria:
 
-| Média           | Situação do Aluno       |
+| Average           | Student Status       |
 |---------------|---------------------|
-| Média < 50   | Reprovado por Nota   |
-| 50 ≤ Média < 70 | Exame Final        |
-| Média ≥ 70   | Aprovado             |
+| Average < 50   | Failed by Grades   |
+| 50 ≤ Average < 70 | Final Test        |
+| Average ≥ 70   | Approved             |
 
 ---
 
-## Cálculo do FGA (Nota para Aprovação no Exame Final)
+## FGA Calculation (Final Grade for Approval)
 
-Para os alunos em **Exame Final**, é calculada a nota necessária para aprovação (**FGA**) com base na fórmula:
+For students in the **Final Test**, the final grade for approval (FGA) is calculated using the formula:
 
 \[
-5 \leq \frac{(\text{média} + \text{FGA})}{2}
+5 \leq \frac{(\text{Average} + \text{FGA})}{2}
 \]
 
-- Se o aluno **não** está em "Exame Final", o **FGA** é definido como `0`.
-- O valor do **FGA** é então escrito na planilha.
+- If the student is **not** in the "Final Test," the **FGA*** is set to `0`.
+- The FGA value is then written to the spreadsheet.
