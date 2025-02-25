@@ -49,7 +49,7 @@ The project's logic is based on two main arrays:
 
 | Average           | Student Status       |
 |---------------|---------------------|
-| Average < 50   | Failed by Grades   |
+| Average < 50   | Failed by Grade   |
 | 50 ≤ Average < 70 | Final Test        |
 | Average ≥ 70   | Approved             |
 
@@ -59,9 +59,9 @@ The project's logic is based on two main arrays:
 
 For students in the **Final Test**, the final grade for approval (FGA) is calculated using the formula:
 
-\[
-5 \leq \frac{(\text{Average} + \text{FGA})}{2}
-\]
+```bash
+5 <=(avg + fga)/2
+```
 
 - If the student is **not** in the "Final Test," the **FGA*** is set to `0`.
 - The FGA value is then written to the spreadsheet.
