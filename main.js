@@ -11,12 +11,12 @@ const oAuth2Client = new OAuth2Client(
     credentials.web.redirect_uris[0]
 );
 
-const sheets = google.sheets({ version: 'v4', auth });
+// Initializes Google Sheets API
+const sheets = google.sheets({ version: 'v4', auth: oAuth2Client });
 
-// Sheet ID to link in methods
+// Sheet info to link in methods
 const spreadsheetId = '11vwb5RKHRECeAva5Egn8hkMHhLYxl1cOoJdTHhxLVns';
-
-
+const spreadsheetUrl = 'https://docs.google.com/spreadsheets/d/11vwb5RKHRECeAva5Egn8hkMHhLYxl1cOoJdTHhxLVns/edit?gid=0#gid=0';
 
 // Set up sheet limits
 const initialRow = 4;
@@ -28,6 +28,7 @@ let situation = [];
 // All students averages
 let generalAverages = [];
 
+// Read from sheet
 async function GET(range) {
     try {
         console.log(`[${new Date().toLocaleTimeString()}] INFO: Fetching data from range: ${range}`);
@@ -43,6 +44,7 @@ async function GET(range) {
     }
 }
 
+// Write on sheet
 async function PUT(range, values) {
     try {
         console.log(`[${new Date().toLocaleTimeString()}] INFO: Updating data in range: ${range}`);
@@ -72,12 +74,12 @@ async function absentFailedForAbsence() {
     if (absences.length > 0) {
         absences.forEach((cell, index) => {
             const absenceCount = parseInt(cell[0], 10);
-            if (absenceCount > tolerance){
+            if (absenceCount > tolerance) {
                 situation.push('Reprovado por Falta');
                 console.log(`[${new Date().toLocaleTimeString()}] INFO: Student in row ${initialRow + index} failed due to absence`);
-            }
-            else
+            } else {
                 situation.push(null);
+            }
         });
     } else {
         console.log(`[${new Date().toLocaleTimeString()}] ERROR: No data found in the absences range.`);
@@ -104,7 +106,7 @@ async function calculateFGA() {
     console.log(`[${new Date().toLocaleTimeString()}] INFO: Calculating FGA for students in "Exame Final" situation`);
     generalAverages.forEach((average, index) => {
         if (situation[index] === 'Exame Final') {
-            // Formula (5 <=(avg + fga)/2) application rounding up
+            // Formula (5 <= (avg + fga) / 2) application rounding up
             let FGAcalc = Math.ceil(100 - average);
             FGA.push(FGAcalc);
             console.log(`[${new Date().toLocaleTimeString()}] INFO: FGA calculated for student in row ${initialRow + index}: ${FGAcalc}`);
@@ -124,8 +126,8 @@ async function calculateFGA() {
 }
 
 async function calculateSituation() {
-
     console.log(`[${new Date().toLocaleTimeString()}] INFO: Calculating student situations`);
+
     // If there was a absent failed for absence case, it fills the situation array with the case, otherwise puts null
     await absentFailedForAbsence();
 
@@ -137,21 +139,17 @@ async function calculateSituation() {
 
     // If the student did not fail for absence, define situation based on grade
     for (let j = initialRow; j <= finalRow; j++) {
-        if (situation[j - initialRow] !== null)
-            continue;
-        else {
-            if (generalAverages[j - initialRow] < 50){
-                situation[j - initialRow] = 'Reprovado por Nota';
-                console.log(`[${new Date().toLocaleTimeString()}] INFO: Student in row ${j} is in "Failed by Grade" situation`);
-            }
-            else if ((generalAverages[j - initialRow] >= 50) && (generalAverages[j - initialRow] < 70)){
-                situation[j - initialRow] = 'Exame Final';
-                console.log(`[${new Date().toLocaleTimeString()}] INFO: Student in row ${j} is in "Exame Final" situation`);
-            }
-            else{
-                situation[j - initialRow] = 'Aprovado';
-                console.log(`[${new Date().toLocaleTimeString()}] INFO: Student in row ${j} is in "Approved" situation`);
-            }
+        if (situation[j - initialRow] !== null) continue;
+
+        if (generalAverages[j - initialRow] < 50) {
+            situation[j - initialRow] = 'Reprovado por Nota';
+            console.log(`[${new Date().toLocaleTimeString()}] INFO: Student in row ${j} is in "Failed by Grade" situation`);
+        } else if (generalAverages[j - initialRow] >= 50 && generalAverages[j - initialRow] < 70) {
+            situation[j - initialRow] = 'Exame Final';
+            console.log(`[${new Date().toLocaleTimeString()}] INFO: Student in row ${j} is in "Exame Final" situation`);
+        } else {
+            situation[j - initialRow] = 'Aprovado';
+            console.log(`[${new Date().toLocaleTimeString()}] INFO: Student in row ${j} is in "Approved" situation`);
         }
     }
 
@@ -165,8 +163,7 @@ async function calculateSituation() {
     await PUT(range, situationValues);
 }
 
-// The main functions call
-(async () => {
+async function runApplication() {
     try {
         console.log(`[${new Date().toLocaleTimeString()}] WARN: Starting Log Application Monitoring: All write/read activity will be registered!`);
 
@@ -181,7 +178,7 @@ async function calculateSituation() {
     } catch (error) {
         console.error(`[${new Date().toLocaleTimeString()}] ERROR: Application failed: ${error.message}`);
     }
-});
+}
 
 // Temporary server to autenticate
 const server = http.createServer(async (req, res) => {
