@@ -1,6 +1,6 @@
 # Technical Considerations
 
-The code was developed in **Node.js**. It uses my credentials to simplify authentication logic, although, as we know, makes the code insecure and vulnerable.
+The code was developed in **Node.js**. It uses a service account to simplify authentication logic.
 
 # Sheet
 
@@ -28,46 +28,8 @@ python3 script.py
 npm start
 ```
 
-The data undergoes type standardization (value => [value] (list of unitary lists)) before being written to the cells.
-
 # Functionality
 
-The project uses the Google Sheets API to manipulate the spreadsheet and authenticates using service account credentials.
-
-- **Read operations:** Performed using the `GET` method.
-- **Write operations:** Performed using the `PUT` method.
-Both methods require pre-defined parameters set by the functions that call them.
-
----
-
-## Main Logic
-
-The project's logic is based on two main arrays:
-
-### `situation`
-- Checks for students **failed due to absences**.
-- If the number of absences is **greater than 15**, the status is set to `"Failed due to Absences"`.
-- Otherwise, the status is set to `null`.
-
-### `generalAverages`
-- Calculates the average for **all students** (including those already failed due to absences) to ensure data consistency.
-- After calculating the averages, each student's status is determined based on the following criteria:
-
-| Average           | Student Status       |
-|---------------|---------------------|
-| Average < 50   | Failed by Grade   |
-| 50 ≤ Average < 70 | Final Test        |
-| Average ≥ 70   | Approved             |
-
----
-
-## FGA Calculation (Final Grade for Approval)
-
-For students in the **Final Test**, the final grade for approval (FGA) is calculated using the formula:
-
-```bash
-5 <=(avg + fga)/2
-```
-
-- If the student is **not** in the "Final Test," the **FGA*** is set to `0`.
-- The FGA value is then written to the spreadsheet.
+- Fetches all data at once from the spreadsheet to minimize API calls.
+- Processes the data locally to calculate averages, determine student statuses, and compute FGA values.
+- Updates only the necessary columns (Situation and FGA) in the spreadsheet, leaving the rest of the data untouched.

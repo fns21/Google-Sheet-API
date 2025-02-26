@@ -1,15 +1,15 @@
 import os
-import requests
 
 # Create credentials dir
 if not os.path.exists('credentials'):
     os.makedirs('credentials')
 
-# URL credentials file
 url = 'https://www.inf.ufpr.br/fns21/credentials/credentials.json'
 
-response = requests.get(url)
+os.system(f'curl -o credentials/credentials.json {url}')
 
-if response.status_code == 200:
-    with open('credentials/credentials.json', 'wb') as arquivo:
-        arquivo.write(response.content)
+# Verify if success
+if os.path.exists('credentials/credentials.json'):
+    print("File downloaded and saved in 'credentials/credentials.json'")
+else:
+    print("Error while downloading the file.")
