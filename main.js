@@ -1,16 +1,15 @@
 // Apis imports
 const { google } = require('googleapis');
-const fs = require('fs');
-
-// Load credentials
+const { OAuth2Client } = require('google-auth-library');
 const credentials = require('./credentials/credentials.json');
+const http = require('http');
 
-// Set up the JWT client
-const auth = new google.auth.JWT({
-    email: credentials.client_email,
-    key: credentials.private_key,
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
+// OAuth2 Set up
+const oAuth2Client = new OAuth2Client(
+    credentials.web.client_id,
+    credentials.web.client_secret,
+    credentials.web.redirect_uris[0]
+);
 
 const sheets = google.sheets({ version: 'v4', auth });
 
@@ -182,4 +181,41 @@ async function calculateSituation() {
     } catch (error) {
         console.error(`[${new Date().toLocaleTimeString()}] ERROR: Application failed: ${error.message}`);
     }
-})();
+});
+
+// Temporary server to autenticate
+const server = http.createServer(async (req, res) => {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const code = url.searchParams.get('code');
+
+    if (code) {
+        try {
+            const { tokens } = await oAuth2Client.getToken(code);
+            oAuth2Client.setCredentials(tokens);
+
+            // Redirect user to the sheet
+            res.writeHead(302, { Location: spreadsheetUrl });
+            res.end();
+
+            await runApplication();
+
+        } catch (error) {
+            res.end(`Erro: ${error.message}`);
+        }
+    } else {
+        res.end('No authorization code found.');
+    }
+});
+
+// Wait for the URL from the temp server
+server.listen(5000, () => {
+    console.log('Temporary server running on http://localhost:5000/google/callback');
+
+    const authUrl = oAuth2Client.generateAuthUrl({
+        access_type: 'offline',
+        scope: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    console.log('Please, visit the URL to complete the authentication:');
+    console.log(authUrl);
+});

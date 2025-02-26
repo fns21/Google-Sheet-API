@@ -16,6 +16,12 @@ To run the project, follow the steps below:
 npm install
 ```
 
+## Download the credentials to access Google Sheets API
+
+``` bash
+python3 script.py
+```
+
 ### Run the project:
 
 ```bash
